@@ -14,14 +14,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import common.Context
 import common.MapComponent
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.koinInject
 import presentation.ui.main.map.view_model.MapViewModel
 import shoping_by_kmp.shared.generated.resources.Res
 import shoping_by_kmp.shared.generated.resources.location
@@ -29,10 +26,9 @@ import shoping_by_kmp.shared.generated.resources.location
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(
-    context: Context,
-    viewModel: MapViewModel = koinInject()
+    viewModel: MapViewModel
 ) {
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state
     val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
@@ -65,12 +61,11 @@ fun MapScreen(
                 .padding(paddingValues)
         ) {
             MapComponent(
-                context = context,
                 onLatitude = { latitude ->
-                    viewModel.onTriggerEvent(MapViewModel.Event.OnLocationUpdate(latitude, state.longitude))
+                    viewModel.onTriggerEvent(MapViewModel.Event.OnLocationUpdate(latitude, state.value.longitude))
                 },
                 onLongitude = { longitude ->
-                    viewModel.onTriggerEvent(MapViewModel.Event.OnLocationUpdate(state.latitude, longitude))
+                    viewModel.onTriggerEvent(MapViewModel.Event.OnLocationUpdate(state.value.latitude, longitude))
                 }
             )
         }

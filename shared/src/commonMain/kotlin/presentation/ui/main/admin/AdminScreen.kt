@@ -8,8 +8,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import common.Context
-import org.koin.compose.koinInject
 import presentation.ui.main.admin.view_model.AdminViewModel
 import presentation.ui.main.admin.components.ProductItem
 import presentation.ui.main.admin.components.AddProductDialog
@@ -17,10 +15,9 @@ import presentation.ui.main.admin.components.AddProductDialog
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminScreen(
-    context: Context,
-    viewModel: AdminViewModel = koinInject()
+    viewModel: AdminViewModel
 ) {
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state
     val snackbarHostState = remember { SnackbarHostState() }
     var showAddDialog by remember { mutableStateOf(false) }
 
@@ -52,7 +49,7 @@ fun AdminScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            if (state.isLoading) {
+            if (state.value.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center)
                 )
@@ -62,7 +59,7 @@ fun AdminScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(state.products) { product ->
+                    items(state.value.products) { product ->
                         ProductItem(
                             product = product,
                             onEdit = { viewModel.onTriggerEvent(AdminViewModel.Event.EditProduct(it)) },

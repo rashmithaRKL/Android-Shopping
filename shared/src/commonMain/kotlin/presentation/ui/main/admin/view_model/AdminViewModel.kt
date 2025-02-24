@@ -42,33 +42,33 @@ class AdminViewModel : BaseViewModel<AdminViewModel.Event, AdminViewModel.State,
             price = price,
             description = description
         )
-        _state.value = state.value.copy(
-            products = state.value.products + newProduct
-        )
+        setState { copy(products = products + newProduct) }
     }
 
     private fun editProduct(product: Product) {
-        val updatedProducts = state.value.products.map {
-            if (it.id == product.id) product else it
+        setState { 
+            copy(products = products.map {
+                if (it.id == product.id) product else it
+            })
         }
-        _state.value = state.value.copy(products = updatedProducts)
     }
 
     private fun deleteProduct(product: Product) {
-        _state.value = state.value.copy(
-            products = state.value.products.filter { it.id != product.id }
-        )
+        setState { 
+            copy(products = products.filter { it.id != product.id })
+        }
     }
 
     private fun loadProducts() {
-        // In a real app, this would load from a repository
-        _state.value = state.value.copy(
-            isLoading = false,
-            products = listOf(
-                Product("1", "Sample Product 1", 99.99, "Description 1"),
-                Product("2", "Sample Product 2", 149.99, "Description 2")
+        setState {
+            copy(
+                isLoading = false,
+                products = listOf(
+                    Product("1", "Sample Product 1", 99.99, "Description 1"),
+                    Product("2", "Sample Product 2", 149.99, "Description 2")
+                )
             )
-        )
+        }
     }
 
     sealed interface Event : ViewEvent {
