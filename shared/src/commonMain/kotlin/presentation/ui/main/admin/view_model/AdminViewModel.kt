@@ -15,7 +15,7 @@ import presentation.ui.main.admin.model.Product
 class AdminViewModel : BaseViewModel<AdminViewModel.Event, AdminViewModel.State, AdminViewModel.Action>() {
     
     private val _state = MutableStateFlow(State())
-    val state: StateFlow<State> = _state.asStateFlow()
+    override val state: StateFlow<State> = _state.asStateFlow()
 
     override fun setInitialState(): State = State()
 

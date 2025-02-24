@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 class MapViewModel : BaseViewModel<MapViewModel.Event, MapViewModel.State, MapViewModel.Action>() {
     
     private val _state = MutableStateFlow(State())
-    val state: StateFlow<State> = _state.asStateFlow()
+    override val state: StateFlow<State> = _state.asStateFlow()
 
     override fun setInitialState(): State = State()
 
@@ -40,7 +40,7 @@ class MapViewModel : BaseViewModel<MapViewModel.Event, MapViewModel.State, MapVi
 
     sealed interface Event : ViewEvent {
         data class OnLocationUpdate(val latitude: Double, val longitude: Double) : Event
-        object OnError : Event
+        data object OnError : Event
     }
 
     data class State(

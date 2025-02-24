@@ -2,78 +2,71 @@ package presentation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import coil3.ImageLoader
-import coil3.annotation.ExperimentalCoilApi
-import coil3.compose.setSingletonImageLoaderFactory
-import coil3.fetch.NetworkFetcher
-import common.Context
-import di.appModule
-import org.koin.compose.KoinApplication
-import org.koin.compose.koinInject
-import presentation.navigation.AppNavigation
-import presentation.theme.AppTheme
+import presentation.navigation.BottomNavItem
 import presentation.ui.main.MainNav
-import presentation.ui.splash.SplashNav
 
-@OptIn(ExperimentalCoilApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun App(context: Context) {
+fun App() {
+    val navController = rememberNavController()
+    val items = listOf(
+        BottomNavItem.Home,
+        BottomNavItem.Cart,
+        BottomNavItem.Profile,
+        BottomNavItem.Map,
+        BottomNavItem.Admin
+    )
 
-    KoinApplication(application = {
-        modules(appModule(context))
-    }) {
+    Scaffold(
+        bottomBar = {
+            NavigationBar {
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = navBackStackEntry?.destination?.route
 
-
-        setSingletonImageLoaderFactory { context ->
-            ImageLoader.Builder(context)
-                .components {
-                    add(NetworkFetcher.Factory())
-                }
-                .build()
-        }
-
-        AppTheme {
-            val navigator = rememberNavController()
-            val viewModel: SharedViewModel = koinInject()
-
-            LaunchedEffect(key1 = viewModel.tokenManager.state.value.isTokenAvailable) {
-                if (!viewModel.tokenManager.state.value.isTokenAvailable) {
-                    navigator.popBackStack()
-                    navigator.navigate(AppNavigation.Splash)
-                }
-            }
-
-            Box(modifier = Modifier.fillMaxSize()) {
-                NavHost(
-                    navController = navigator,
-                    startDestination = AppNavigation.Splash,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    composable<AppNavigation.Splash> {
-                        SplashNav(navigateToMain = {
-                            navigator.popBackStack()
-                            navigator.navigate(AppNavigation.Main)
-                        })
-                    }
-                    composable<AppNavigation.Main> {
-                        MainNav (context = context){
-                            navigator.popBackStack()
-                            navigator.navigate(AppNavigation.Splash)
+                items.forEach { item ->
+                    NavigationBarItem(
+                        icon = {
+                            if (currentRoute == item.screen_route) {
+                                item.selectedIcon()
+                            } else {
+                                item.icon()
+                            }
+                        },
+                        label = { Text(text = item.title) },
+                        selected = currentRoute == item.screen_route,
+                        onClick = {
+                            navController.navigate(item.screen_route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
                         }
-                    }
+                    )
                 }
             }
-
+        }
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            MainNav(navController = navController)
         }
     }
 }
-
-
-
-
