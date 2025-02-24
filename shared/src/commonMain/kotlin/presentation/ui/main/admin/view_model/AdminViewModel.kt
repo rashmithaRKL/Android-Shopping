@@ -1,5 +1,7 @@
 package presentation.ui.main.admin.view_model
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import business.core.BaseViewModel
 import business.core.ProgressBarState
 import business.core.Queue
@@ -7,15 +9,12 @@ import business.core.UIComponent
 import business.core.ViewEvent
 import business.core.ViewSingleAction
 import business.core.ViewState
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import presentation.ui.main.admin.model.Product
 
 class AdminViewModel : BaseViewModel<AdminViewModel.Event, AdminViewModel.State, AdminViewModel.Action>() {
     
-    private val _state = MutableStateFlow(State())
-    override val state: StateFlow<State> = _state.asStateFlow()
+    private val _state = mutableStateOf(State())
+    override val state: MutableState<State> = _state
 
     override fun setInitialState(): State = State()
 
