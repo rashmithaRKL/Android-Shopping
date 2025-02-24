@@ -34,6 +34,10 @@ kotlin {
                 implementation("androidx.compose.ui:ui:1.5.4")
                 implementation("androidx.compose.foundation:foundation:1.5.4")
                 implementation("androidx.compose.material3:material3:1.1.2")
+
+                // Accompanist
+                implementation(libs.system.ui.controller)
+                implementation(libs.accompanist.permissions)
             }
         }
     }
