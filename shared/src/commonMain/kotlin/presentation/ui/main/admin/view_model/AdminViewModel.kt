@@ -9,14 +9,28 @@ import business.core.UIComponent
 import business.core.ViewEvent
 import business.core.ViewSingleAction
 import business.core.ViewState
-import presentation.ui.main.admin.model.Product
+import common.database.AppDatabase
+import common.database.entity.ProductEntity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class AdminViewModel : BaseViewModel<AdminViewModel.Event, AdminViewModel.State, AdminViewModel.Action>() {
     
     private val _state = mutableStateOf(State())
     override val state: MutableState<State> = _state
+    private lateinit var database: AppDatabase
 
-    override fun setInitialState(): State = State()
+    override fun setInitialState(): State {
+        loadProducts()
+        return State()
+    }
+
+    fun initializeDatabase(context: android.content.Context) {
+        database = AppDatabase.getDatabase(context)
+    }
 
     override fun onTriggerEvent(event: Event) {
         when (event) {
@@ -35,51 +49,117 @@ class AdminViewModel : BaseViewModel<AdminViewModel.Event, AdminViewModel.State,
         }
     }
 
+    private fun loadProducts() {
+        setState { copy(isLoading = true) }
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val products = database.productDao().getAllProducts().first()
+                withContext(Dispatchers.Main) {
+                    setState { 
+                        copy(
+                            products = products,
+                            isLoading = false
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    setState { 
+                        copy(
+                            isLoading = false,
+                            errorQueue = errorQueue.add(
+                                UIComponent.DialogSimple(
+                                    title = "Error",
+                                    description = e.message ?: "Unknown error occurred"
+                                )
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     private fun addProduct(name: String, price: Double, description: String) {
-        val newProduct = Product(
-            id = (state.value.products.size + 1).toString(),
+        val newProduct = ProductEntity(
             name = name,
             price = price,
             description = description
         )
-        setState { copy(products = products + newProduct) }
-    }
-
-    private fun editProduct(product: Product) {
-        setState { 
-            copy(products = products.map {
-                if (it.id == product.id) product else it
-            })
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                database.productDao().insertProduct(newProduct)
+                loadProducts()
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    setState { 
+                        copy(
+                            errorQueue = errorQueue.add(
+                                UIComponent.DialogSimple(
+                                    title = "Error",
+                                    description = "Failed to add product: ${e.message}"
+                                )
+                            )
+                        )
+                    }
+                }
+            }
         }
     }
 
-    private fun deleteProduct(product: Product) {
-        setState { 
-            copy(products = products.filter { it.id != product.id })
+    private fun editProduct(product: ProductEntity) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                database.productDao().updateProduct(product)
+                loadProducts()
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    setState { 
+                        copy(
+                            errorQueue = errorQueue.add(
+                                UIComponent.DialogSimple(
+                                    title = "Error",
+                                    description = "Failed to update product: ${e.message}"
+                                )
+                            )
+                        )
+                    }
+                }
+            }
         }
     }
 
-    private fun loadProducts() {
-        setState {
-            copy(
-                isLoading = false,
-                products = listOf(
-                    Product("1", "Sample Product 1", 99.99, "Description 1"),
-                    Product("2", "Sample Product 2", 149.99, "Description 2")
-                )
-            )
+    private fun deleteProduct(product: ProductEntity) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                database.productDao().deleteProduct(product)
+                loadProducts()
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    setState { 
+                        copy(
+                            errorQueue = errorQueue.add(
+                                UIComponent.DialogSimple(
+                                    title = "Error",
+                                    description = "Failed to delete product: ${e.message}"
+                                )
+                            )
+                        )
+                    }
+                }
+            }
         }
     }
 
     sealed interface Event : ViewEvent {
         data class AddProduct(val name: String, val price: Double, val description: String) : Event
-        data class EditProduct(val product: Product) : Event
-        data class DeleteProduct(val product: Product) : Event
+        data class EditProduct(val product: ProductEntity) : Event
+        data class DeleteProduct(val product: ProductEntity) : Event
         data object LoadProducts : Event
     }
 
     data class State(
-        val products: List<Product> = emptyList(),
+        val products: List<ProductEntity> = emptyList(),
         val isLoading: Boolean = true,
         val progressBarState: ProgressBarState = ProgressBarState.Idle,
         val errorQueue: Queue<UIComponent> = Queue(mutableListOf())

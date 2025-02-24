@@ -5,7 +5,7 @@ import presentation.App
 @Composable
 fun MainView(application: Application) {
 
-    App(application)
+    App()
 }
 
 

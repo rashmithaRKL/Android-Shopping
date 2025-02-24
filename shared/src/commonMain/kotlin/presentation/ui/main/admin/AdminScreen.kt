@@ -49,7 +49,7 @@ fun AdminScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            if (state.value.isLoading) {
+            if (state.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center)
                 )
@@ -59,7 +59,7 @@ fun AdminScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(state.value.products) { product ->
+                    items(state.products) { product ->
                         ProductItem(
                             product = product,
                             onEdit = { viewModel.onTriggerEvent(AdminViewModel.Event.EditProduct(it)) },

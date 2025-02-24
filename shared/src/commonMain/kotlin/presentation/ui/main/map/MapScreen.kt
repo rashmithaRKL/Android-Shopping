@@ -1,6 +1,7 @@
 package presentation.ui.main.map
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -60,12 +61,12 @@ fun MapScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            MapComponent(
+                MapComponent(context = LocalContext.current,
                 onLatitude = { latitude ->
-                    viewModel.onTriggerEvent(MapViewModel.Event.OnLocationUpdate(latitude, state.value.longitude))
+                    viewModel.onTriggerEvent(MapViewModel.Event.OnLocationUpdate(latitude, state.longitude))
                 },
                 onLongitude = { longitude ->
-                    viewModel.onTriggerEvent(MapViewModel.Event.OnLocationUpdate(state.value.latitude, longitude))
+                    viewModel.onTriggerEvent(MapViewModel.Event.OnLocationUpdate(state.latitude, longitude))
                 }
             )
         }
