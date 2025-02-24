@@ -1,54 +1,56 @@
 plugins {
-    alias(libs.plugins.shopping.kotlinMultiplatform)
-    alias(libs.plugins.shopping.shared)
-    alias(libs.plugins.ktlint)
-}
-
-ktlint {
-    android = true
-    outputToConsole = true
-    outputColorName = "RED"
+    kotlin("multiplatform")
+    id("com.android.library")
+    id("com.google.devtools.ksp") version "1.9.21-1.0.15"
 }
 
 kotlin {
-
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "shared"
-            isStatic = true
-        }
-    }
+    jvmToolchain(17)
+    
+    androidTarget()
 
     sourceSets {
-
-        commonTest {
+        val commonMain by getting {
             dependencies {
-
-            }
-        }
-        commonMain {
-            dependencies {
-
+                // Coroutines
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
             }
         }
 
-        androidMain {
+        val androidMain by getting {
             dependencies {
+                // Room
+                implementation("androidx.room:room-runtime:2.6.1")
+                implementation("androidx.room:room-ktx:2.6.1")
 
-
+                // AndroidX
+                implementation("androidx.core:core-ktx:1.12.0")
+                implementation("androidx.appcompat:appcompat:1.6.1")
             }
         }
-        iosMain {
-            dependencies {
-                
-            }
-        }
-
     }
 }
 
+android {
+    namespace = "com.razzaghi.shopingbykmp"
+    compileSdk = 34
 
+    defaultConfig {
+        minSdk = 24
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+}
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+    arg("room.incremental", "true")
+    arg("room.expandProjection", "true")
+}
+
+dependencies {
+    add("kspAndroid", "androidx.room:room-compiler:2.6.1")
+}

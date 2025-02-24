@@ -43,6 +43,9 @@ class AdminViewModel : BaseViewModel<AdminViewModel.Event, AdminViewModel.State,
             is Event.DeleteProduct -> {
                 deleteProduct(event.product)
             }
+            is Event.SearchProducts -> {
+                searchProducts(event.query)
+            }
             Event.LoadProducts -> {
                 loadProducts()
             }
@@ -71,6 +74,41 @@ class AdminViewModel : BaseViewModel<AdminViewModel.Event, AdminViewModel.State,
                                 UIComponent.DialogSimple(
                                     title = "Error",
                                     description = e.message ?: "Unknown error occurred"
+                                )
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun searchProducts(query: String) {
+        setState { copy(isLoading = true) }
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val products = if (query.isBlank()) {
+                    database.productDao().getAllProducts().first()
+                } else {
+                    database.productDao().searchProducts(query).first()
+                }
+                withContext(Dispatchers.Main) {
+                    setState { 
+                        copy(
+                            products = products,
+                            isLoading = false
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    setState { 
+                        copy(
+                            isLoading = false,
+                            errorQueue = errorQueue.add(
+                                UIComponent.DialogSimple(
+                                    title = "Search Error",
+                                    description = e.message ?: "Failed to search products"
                                 )
                             )
                         )
@@ -155,6 +193,7 @@ class AdminViewModel : BaseViewModel<AdminViewModel.Event, AdminViewModel.State,
         data class AddProduct(val name: String, val price: Double, val description: String) : Event
         data class EditProduct(val product: ProductEntity) : Event
         data class DeleteProduct(val product: ProductEntity) : Event
+        data class SearchProducts(val query: String) : Event
         data object LoadProducts : Event
     }
 

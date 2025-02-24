@@ -2,26 +2,17 @@ plugins {
     `kotlin-dsl`
 }
 
-group = "com.razzaghi.shopingbykmp.buildlogic"
+repositories {
+    google()
+    mavenCentral()
+    gradlePluginPortal()
+    maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+}
 
 dependencies {
-    compileOnly(libs.plugins.kotlin.serialization.toDep())
-    compileOnly(libs.plugins.androidApplication.toDep())
-    compileOnly(libs.plugins.androidLibrary.toDep())
-    compileOnly(libs.plugins.composeMultiplatform.toDep())
-    compileOnly(libs.plugins.kotlinMultiplatform.toDep())
-    compileOnly(libs.plugins.compose.compiler.toDep())
-}
-
-fun Provider<PluginDependency>.toDep() = map {
-    "${it.pluginId}:${it.pluginId}.gradle.plugin:${it.version}"
-}
-
-tasks {
-    validatePlugins {
-        enableStricterValidation = true
-        failOnWarning = true
-    }
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.21")
+    implementation("com.android.tools.build:gradle:8.1.0")
+    implementation("org.jetbrains.compose:compose-gradle-plugin:1.5.11")
 }
 
 gradlePlugin {

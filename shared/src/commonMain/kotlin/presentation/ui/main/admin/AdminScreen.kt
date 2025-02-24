@@ -25,7 +25,81 @@ fun AdminScreen(
         viewModel.onTriggerEvent(AdminViewModel.Event.LoadProducts)
     }
 
+    var searchQuery by remember { mutableStateOf("") }
+
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Admin Panel") },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { showAddDialog = true }
+            ) {
+                Text("+")
+            }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            TextField(
+                value = searchQuery,
+                onValueChange = {
+                    searchQuery = it
+                    viewModel.onTriggerEvent(AdminViewModel.Event.SearchProducts(it))
+                },
+                placeholder = { Text("Search products...") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                if (state.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(state.products) { product ->
+                            ProductItem(
+                                product = product,
+                                onEdit = { viewModel.onTriggerEvent(AdminViewModel.Event.EditProduct(it)) },
+                                onDelete = { viewModel.onTriggerEvent(AdminViewModel.Event.DeleteProduct(it)) }
+                            )
+                        }
+                    }
+                }
+
+                if (showAddDialog) {
+                    AddProductDialog(
+                        onDismiss = { showAddDialog = false },
+                        onConfirm = { name, price, description ->
+                            viewModel.onTriggerEvent(AdminViewModel.Event.AddProduct(name, price, description))
+                            showAddDialog = false
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
         topBar = {
             TopAppBar(
                 title = { Text("Admin Panel") },

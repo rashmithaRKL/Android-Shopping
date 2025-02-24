@@ -6,8 +6,11 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ProductDao {
-    @Query("SELECT * FROM products")
-    fun getAllProducts(): Flow<List<ProductEntity>>
+@Query("SELECT * FROM products")
+fun getAllProducts(): Flow<List<ProductEntity>>
+
+@Query("SELECT * FROM products WHERE name LIKE '%' || :query || '%' OR description LIKE '%' || :query || '%'")
+fun searchProducts(query: String): Flow<List<ProductEntity>>
 
     @Query("SELECT * FROM products WHERE id = :id")
     suspend fun getProductById(id: Int): ProductEntity?
