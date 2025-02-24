@@ -36,8 +36,8 @@ kotlin {
                 implementation("androidx.compose.material3:material3:1.1.2")
 
                 // Accompanist
-                implementation(libs.system.ui.controller)
-                implementation(libs.accompanist.permissions)
+                implementation("com.google.accompanist:accompanist-systemuicontroller:0.33.2-alpha")
+                implementation("com.google.accompanist:accompanist-permissions:0.33.2-alpha")
             }
         }
     }
