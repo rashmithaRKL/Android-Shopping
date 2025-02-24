@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import presentation.ui.main.admin.view_model.AdminViewModel
 import presentation.ui.main.admin.components.ProductItem
 import presentation.ui.main.admin.components.AddProductDialog
+import presentation.ui.main.admin.components.EditProductDialog
 import presentation.ui.main.admin.model.Product
 import common.database.entity.ProductEntity
 
@@ -22,6 +23,7 @@ fun AdminScreen(
     val state by viewModel.state
     val snackbarHostState = remember { SnackbarHostState() }
     var showAddDialog by remember { mutableStateOf(false) }
+    var productToEdit by remember { mutableStateOf<Product?>(null) }
 
     LaunchedEffect(Unit) {
         viewModel.onTriggerEvent(AdminViewModel.Event.LoadProducts)
@@ -91,14 +93,7 @@ fun AdminScreen(
                             ProductItem(
                                 product = product,
                                 onEdit = { editedProduct ->
-                                    // Convert back to ProductEntity for the ViewModel
-                                    val editedEntity = ProductEntity(
-                                        id = editedProduct.id.toLongOrNull() ?: 0,
-                                        name = editedProduct.name,
-                                        price = editedProduct.price,
-                                        description = editedProduct.description
-                                    )
-                                    viewModel.onTriggerEvent(AdminViewModel.Event.EditProduct(editedEntity))
+                                    productToEdit = editedProduct
                                 },
                                 onDelete = { productToDelete ->
                                     // Convert to ProductEntity for the ViewModel
@@ -121,6 +116,23 @@ fun AdminScreen(
                         onConfirm = { name, price, description ->
                             viewModel.onTriggerEvent(AdminViewModel.Event.AddProduct(name, price, description))
                             showAddDialog = false
+                        }
+                    )
+                }
+
+                if (productToEdit != null) {
+                    EditProductDialog(
+                        product = productToEdit!!,
+                        onDismiss = { productToEdit = null },
+                        onConfirm = { name, price, description ->
+                            val editedEntity = ProductEntity(
+                                id = productToEdit!!.id.toLongOrNull() ?: 0,
+                                name = name,
+                                price = price,
+                                description = description
+                            )
+                            viewModel.onTriggerEvent(AdminViewModel.Event.EditProduct(editedEntity))
+                            productToEdit = null
                         }
                     )
                 }
