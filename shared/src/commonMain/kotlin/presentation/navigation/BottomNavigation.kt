@@ -1,56 +1,55 @@
 package presentation.navigation
 
-import org.jetbrains.compose.resources.DrawableResource
-import shoping_by_kmp.shared.generated.resources.Res
-import shoping_by_kmp.shared.generated.resources.cart
-import shoping_by_kmp.shared.generated.resources.cart_border
-import shoping_by_kmp.shared.generated.resources.heart2
-import shoping_by_kmp.shared.generated.resources.heart_border2
-import shoping_by_kmp.shared.generated.resources.home
-import shoping_by_kmp.shared.generated.resources.home_border
-import shoping_by_kmp.shared.generated.resources.profile
-import shoping_by_kmp.shared.generated.resources.profile_border
-import shoping_by_kmp.shared.generated.resources.location
-import shoping_by_kmp.shared.generated.resources.location2
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.painterResource
+import shoping_by_kmp.shared.generated.resources.*
 
-sealed class BottomNavigation (
-    val route: String,
-    val title: String,
-    val selectedIcon: DrawableResource,
-    val unSelectedIcon: DrawableResource,
+sealed class BottomNavItem(
+    var title: String,
+    var icon: @Composable () -> Unit,
+    var selectedIcon: @Composable () -> Unit,
+    var screen_route: String
 ) {
-
-   data object Home : BottomNavigation(
-        route = "Home", title = "Home",
-        selectedIcon = Res.drawable.home,
-        unSelectedIcon = Res.drawable.home_border
+    @OptIn(ExperimentalResourceApi::class)
+    object Home : BottomNavItem(
+        "Home",
+        { Icon(painterResource(Res.drawable.home_border), "Home") },
+        { Icon(painterResource(Res.drawable.home), "Home") },
+        "home"
     )
 
-   data object Wishlist : BottomNavigation(
-        route = "Wishlist", title = "Wishlist",
-        selectedIcon = Res.drawable.heart2,
-        unSelectedIcon = Res.drawable.heart_border2
+    @OptIn(ExperimentalResourceApi::class)
+    object Cart : BottomNavItem(
+        "Cart",
+        { Icon(painterResource(Res.drawable.cart_border), "Cart") },
+        { Icon(painterResource(Res.drawable.cart), "Cart") },
+        "cart"
     )
 
-   data object Cart : BottomNavigation(
-        route = "Cart", title = "Cart",
-        selectedIcon = Res.drawable.cart,
-        unSelectedIcon = Res.drawable.cart_border
+    @OptIn(ExperimentalResourceApi::class)
+    object Profile : BottomNavItem(
+        "Profile",
+        { Icon(painterResource(Res.drawable.profile_border), "Profile") },
+        { Icon(painterResource(Res.drawable.profile), "Profile") },
+        "profile"
     )
 
-   data object Profile : BottomNavigation(
-        route = "Profile", title = "Profile",
-        selectedIcon = Res.drawable.profile,
-        unSelectedIcon = Res.drawable.profile_border
+    @OptIn(ExperimentalResourceApi::class)
+    object Map : BottomNavItem(
+        "Map",
+        { Icon(painterResource(Res.drawable.location), "Map") },
+        { Icon(painterResource(Res.drawable.location), "Map") },
+        "map"
     )
 
-   data object Map : BottomNavigation(
-        route = "Map", title = "Map",
-        selectedIcon = Res.drawable.location,
-        unSelectedIcon = Res.drawable.location2
+    @OptIn(ExperimentalResourceApi::class)
+    object Admin : BottomNavItem(
+        "Admin",
+        { Icon(painterResource(Res.drawable.setting), "Admin") },
+        { Icon(painterResource(Res.drawable.setting2), "Admin") },
+        "admin"
     )
-
-
-
 }
-

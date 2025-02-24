@@ -7,9 +7,15 @@ import business.core.UIComponent
 import business.core.ViewEvent
 import business.core.ViewSingleAction
 import business.core.ViewState
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class MapViewModel : BaseViewModel<MapViewModel.Event, MapViewModel.State, MapViewModel.Action>() {
     
+    private val _state = MutableStateFlow(State())
+    val state: StateFlow<State> = _state.asStateFlow()
+
     override fun setInitialState(): State = State()
 
     override fun onTriggerEvent(event: Event) {
@@ -34,14 +40,14 @@ class MapViewModel : BaseViewModel<MapViewModel.Event, MapViewModel.State, MapVi
 
     sealed interface Event : ViewEvent {
         data class OnLocationUpdate(val latitude: Double, val longitude: Double) : Event
-        data object OnError : Event
+        object OnError : Event
     }
 
     data class State(
         val latitude: Double = 0.0,
         val longitude: Double = 0.0,
         val progressBarState: ProgressBarState = ProgressBarState.Idle,
-        val errorQueue: Queue<UIComponent> = Queue(mutableListOf<UIComponent>())
+        val errorQueue: Queue<UIComponent> = Queue(mutableListOf())
     ) : ViewState
 
     sealed interface Action : ViewSingleAction
