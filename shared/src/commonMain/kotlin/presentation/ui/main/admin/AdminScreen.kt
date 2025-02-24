@@ -11,6 +11,8 @@ import androidx.compose.ui.unit.dp
 import presentation.ui.main.admin.view_model.AdminViewModel
 import presentation.ui.main.admin.components.ProductItem
 import presentation.ui.main.admin.components.AddProductDialog
+import presentation.ui.main.admin.model.Product
+import common.database.entity.ProductEntity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,11 +79,37 @@ fun AdminScreen(
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(state.products) { product ->
+                        items(state.products) { productEntity ->
+                            // Convert ProductEntity to Product
+                            val product = Product(
+                                id = productEntity.id.toString(),
+                                name = productEntity.name,
+                                price = productEntity.price,
+                                description = productEntity.description
+                            )
+                            
                             ProductItem(
                                 product = product,
-                                onEdit = { viewModel.onTriggerEvent(AdminViewModel.Event.EditProduct(it)) },
-                                onDelete = { viewModel.onTriggerEvent(AdminViewModel.Event.DeleteProduct(it)) }
+                                onEdit = { editedProduct ->
+                                    // Convert back to ProductEntity for the ViewModel
+                                    val editedEntity = ProductEntity(
+                                        id = editedProduct.id.toLongOrNull() ?: 0,
+                                        name = editedProduct.name,
+                                        price = editedProduct.price,
+                                        description = editedProduct.description
+                                    )
+                                    viewModel.onTriggerEvent(AdminViewModel.Event.EditProduct(editedEntity))
+                                },
+                                onDelete = { productToDelete ->
+                                    // Convert to ProductEntity for the ViewModel
+                                    val entityToDelete = ProductEntity(
+                                        id = productToDelete.id.toLongOrNull() ?: 0,
+                                        name = productToDelete.name,
+                                        price = productToDelete.price,
+                                        description = productToDelete.description
+                                    )
+                                    viewModel.onTriggerEvent(AdminViewModel.Event.DeleteProduct(entityToDelete))
+                                }
                             )
                         }
                     }
@@ -96,61 +124,6 @@ fun AdminScreen(
                         }
                     )
                 }
-            }
-        }
-    }
-}
-        topBar = {
-            TopAppBar(
-                title = { Text("Admin Panel") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { showAddDialog = true }
-            ) {
-                Text("+")
-            }
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            if (state.isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(state.products) { product ->
-                        ProductItem(
-                            product = product,
-                            onEdit = { viewModel.onTriggerEvent(AdminViewModel.Event.EditProduct(it)) },
-                            onDelete = { viewModel.onTriggerEvent(AdminViewModel.Event.DeleteProduct(it)) }
-                        )
-                    }
-                }
-            }
-
-            if (showAddDialog) {
-                AddProductDialog(
-                    onDismiss = { showAddDialog = false },
-                    onConfirm = { name, price, description ->
-                        viewModel.onTriggerEvent(AdminViewModel.Event.AddProduct(name, price, description))
-                        showAddDialog = false
-                    }
-                )
             }
         }
     }
